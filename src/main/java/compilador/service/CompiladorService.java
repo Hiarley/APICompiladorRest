@@ -7,6 +7,7 @@ import javax.ejb.Stateless;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
@@ -20,32 +21,51 @@ public class CompiladorService {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/compilar/")
-	public String compilar( String codigo) {
+	@Path("/compilar/{idUsuario}")
+	public String compilar(@PathParam("idUsuario") int idUsuario ,String codigo) {
+		StringBuilder comando = new StringBuilder();
+		String criarPastaPrincipal = "mkdir /codigos ; chmod 777 /codigos;";
+		String irPasta = "cd /codigos ;";
+		String nomeArquivo = "";
+		String criarAquivo = "echo '"+codigo+"' >> "+nomeArquivo+";";
 		String gpp = "g++ hello.cpp -o hello";
 		String runcode = "./hello";
 		String del = "rm hello";
+		execCommand("cd ../codigos");
 		
+		String diretorios = execCommand("ls -m /");
 		
-		criarArquivo(codigo);
-		
-		//execCommand("dir");
-		
-		
-		
-		
-		return execCommand("dir");
+		if(containsPaste(diretorios.split(","), "codigos")) {
+			
+			comando.append(irPasta);
+			diretorios = execCommand(irPasta+"ls -m;");
+			if(containsPaste(diretorios.split(","), Integer.toString(idUsuario))) {
+				
+			}else {
+				String teste = execCommand(comando.toString()+"mkdir "+idUsuario+";"); 
+				comando.append("cd "+idUsuario+";");
+			}
+		}else {
+			String teste = execCommand(criarPastaPrincipal);
+			System.err.println(teste);
+		}
+		return execCommand("pwd");
 	}
 	
-	public String criarArquivo(String codigo) {
-		return "";
+	private Boolean containsPaste(String[] diretorios, String nomePasta) {
+		for(int i = 0 ; i < diretorios.length ; i++) {
+			if(diretorios[i].trim().equals(nomePasta.trim())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 		
 	
-	public static String execCommand(String command) {
+	private String execCommand(String command) {
 		//String[] array = {"cmd", "/c",  String.join("& ", command)}; // Windows
-		String[] array = {"/bin/bash", "-c", command};
+		String[] array = {"/bin/bash", "-c","cd /codigos;"+command};
 
 		try {
 			ProcessBuilder builder = new ProcessBuilder(array);
