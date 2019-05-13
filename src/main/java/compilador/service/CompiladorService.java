@@ -24,32 +24,26 @@ public class CompiladorService {
 	@Path("/compilar/{idUsuario}")
 	public String compilar(@PathParam("idUsuario") int idUsuario ,String codigo) {
 		StringBuilder comando = new StringBuilder();
-		String criarPastaPrincipal = "mkdir /codigos ; chmod 777 /codigos;";
+		//String criarPastaPrincipal = "mkdir /codigos ; chmod 777 /codigos;";
 		String irPasta = "cd /codigos ;";
-		String nomeArquivo = "";
-		String criarAquivo = "echo '"+codigo+"' >> "+nomeArquivo+";";
-		String gpp = "g++ hello.cpp -o hello";
-		String runcode = "./hello";
-		String del = "rm hello";
-		execCommand("cd ../codigos");
+		
+		//execCommand("cd ../codigos");
 		
 		String diretorios = execCommand("ls -m /");
 		
 		if(containsPaste(diretorios.split(","), "codigos")) {
 			
 			comando.append(irPasta);
-			diretorios = execCommand(irPasta+"ls -m;");
+			diretorios = execCommand(comando.toString()+"ls -m;");
 			if(containsPaste(diretorios.split(","), Integer.toString(idUsuario))) {
-				
+				return compilaCodigo(comando, idUsuario, codigo);
 			}else {
-				String teste = execCommand(comando.toString()+"mkdir "+idUsuario+";"); 
-				comando.append("cd "+idUsuario+";");
+				execCommand(comando.toString()+"mkdir "+idUsuario+";"); 
+				return compilaCodigo(comando, idUsuario, codigo);
 			}
 		}else {
-			String teste = execCommand(criarPastaPrincipal);
-			System.err.println(teste);
+			return "Servidor não condigurado, entre em contato com o administrador.";
 		}
-		return execCommand("pwd");
 	}
 	
 	private Boolean containsPaste(String[] diretorios, String nomePasta) {
@@ -59,6 +53,20 @@ public class CompiladorService {
 			}
 		}
 		return false;
+	}
+	
+	private String compilaCodigo(StringBuilder comando, int idUsuario, String codigo) {
+		String criarAquivo = "echo '"+codigo+"' >> tmp.cpp;";
+		String gpp = "g++ tmp.cpp -o tmp;";
+		String runcode = "./tmp;";
+		String del = "rm tmp tmp.cpp -f;";
+
+		comando.append("cd "+idUsuario+";");
+		comando.append(criarAquivo);
+		comando.append(gpp);
+		comando.append(runcode);
+		comando.append(del);
+		return execCommand(comando.toString());
 	}
 
 		
